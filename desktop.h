@@ -74,15 +74,17 @@ public :
     void parse_cmd(bool turn);
     void print_map();
     void print_status();
+    inline void judge();
+    void judge(int pos);
     //inline void top(){printf("card top :%c\n",Card.top());};
     friend void print_act(const Desktop& desk,int* act_lock);
     inline char get_jack(){return jack_id;}
 private:
-    char dis_map[9];
+    string map[5][5];
     District people[9] {'a','b','c','d','e','f','g','h','i'};
     char jack_id;
     Holmes_team hol_tm;
-    stack<char> Card;
+    stack<District*> Card;
     int score[2];
     pair<string,string> ActCard[4];
 };
@@ -91,21 +93,21 @@ District::District(char c): id(tolower(c)) {
     srand(id+time(NULL));
     set_direction(rand()%4 * 90);
 }
-int District::set_direction(int deg) {
-    switch(deg) {
-    case 0:
+int District::set_direction(int dir) {
+    switch(dir) {
+    case UP:
         if(id=='a'&& die)deadroad=NON;
         else deadroad=UP;
         break;
-    case 90:
+    case RIGHT:
         if(id=='a'&& die)deadroad=NON;
         else deadroad=RIGHT;
         break;
-    case 180:
+    case DOWN:
         if(id=='a'&& die)deadroad=NON;
         else deadroad=DOWN;
         break;
-    case 270:
+    case LEFT:
         if(id=='a'&& die)deadroad=NON;
         else deadroad=LEFT;
         break;
@@ -118,15 +120,15 @@ int District::set_direction(int deg) {
 int District::get_deg() {
     switch(deadroad) {
     case NON:
-        return 360;
+        return NON;
     case UP :
-        return 0;
+        return UP;
     case RIGHT :
-        return 90;
+        return RIGHT;
     case DOWN :
-        return 180;
+        return DOWN;
     case LEFT :
-        return 270;
+        return LEFT;
     }
 }
 
@@ -161,20 +163,18 @@ void Holmes_team::get_all_pos() {
 //      x   9   8   7   x
 //             dog
 //map table
-//     0,0 1,0 2,0 3,0 4,0
-//     0,1 1,1 2,1 3,1 4,1
-//     0,2 1,2 2,2 3,2 4,2
-//     0,3 1,3 2,3 3,3 4,3
-//     0,4 1,4 2,4 3,4 4,4
+//     0,0 0,1 0,2 0,3 0,4
+//     1,0 1,1 1,2 1,3 1,4
+//     2,0 2,1 2,2 2,3 2,4
+//     3,0 3,1 3,2 3,3 3,4
+//     4,0 4,1 4,2 4,3 4,4
 Desktop::Desktop() {
     score[0]=0;
     score[1]=0;
     int num[9] {0,1,2,3,4,5,6,7,8};
     // shuffle 9 districts
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-    shuffle(begin(num),end(num),std::default_random_engine(seed));
-    char* p=dis_map;
-    for(int i=0; i<9; ++i)*p=people[num[i]].id,++p;
+    shuffle(begin(people),end(people),std::default_random_engine(seed));
     // act card shuffle
     pair<string,string>  act[4] {
         pair<string,string>(string("draw card"),string("Watson")),
@@ -185,18 +185,21 @@ Desktop::Desktop() {
     shuffle(begin(act),end(act),std::default_random_engine(seed));
     for(int i=0; i<4; i++)ActCard[i] = act[i];
     // push card
-    char cd[9]{'a','b','c','d','e','f','g','h','i'};
+    District* cd[9];
+    for(int i=0; i<9; i++)cd[i]=&people[i];
     shuffle(begin(cd),end(cd),std::default_random_engine(seed));
     for(int i=0; i<9; ++i)Card.push(cd[i]);
-    jack_id = Card.top(); //initial jack identity;
+    jack_id = Card.top()->id; //initial jack identity;
     Card.pop();
 }
 void Desktop::parse_cmd(bool turn) {//0 Holmes;1 jacks
     string cmd;
+
     while(cout <<"Input the command :",cin >>cmd) {
+       //system("cls");
         if(cmd == string("-draw")) {
             if(turn) {
-                switch(Card.top()) {
+                switch(Card.top()->id) {
                 case 'a':
                     score[1]+= 1;
                     break;
@@ -225,16 +228,14 @@ void Desktop::parse_cmd(bool turn) {//0 Holmes;1 jacks
                     score[1]+= 0;
                     break;
                 }
-                Card.pop();
             } else {
-                char d = Card.top();
-                for(int i=0; i<9; i++ ) {
-                    if(people[i].id==d)people[i].to_die();
-                    break;
+                District* d = Card.top();
+                printf("%c die\n",d->id);
+                d->to_die();
                 }
-                Card.pop();
-            }
+            Card.pop();
             break;
+
         } else if(cmd == string("-dog")) {
             int step;
             while(cout <<"Input the step :",cin >>step) {
@@ -301,14 +302,12 @@ void Desktop::parse_cmd(bool turn) {//0 Holmes;1 jacks
                 if(sel>='a' && sel <='i')break;
                 else cout <<"Error people !\n";
             }
-            int p1=0,p2=0,p3=0,p4=0;
+            int p3=0,p4=0;
             for(int i=0; i<9; i++ ) {
-                if(dis_map[i]==sel)p1=i;
-                if(dis_map[i]==sel2)p2=i;
                 if(people[i].id==sel)p3=i;
                 if(people[i].id==sel2)p4=i;
             }
-            std::swap(dis_map[p1],dis_map[p2]);
+
             std::swap(people[p3],people[p4]);
             break;
         }else if(cmd == string("-help")){
@@ -323,7 +322,6 @@ void Desktop::parse_cmd(bool turn) {//0 Holmes;1 jacks
     }
 }
 void Desktop::print_map() {
-    string map[5][5];
     struct coord {
         int x;
         int y;
@@ -389,14 +387,10 @@ void Desktop::print_map() {
     int k=0;
     for(int i=1; i<4; ++i)
         for(int j=1; j<4; ++j) {
-            int ch;
-            for(int i=0; i<9; i++ ) {
-                if(people[i].id==dis_map[k])ch=i;
-            }
-            if(people[ch].isDie()) {
+            if(people[k].isDie()) {
                 map[i][j]=string()+'0';
                 k++;
-            } else map[i][j]=string()+dis_map[k++];
+            } else map[i][j]=string()+people[k++].id;
         }
     for(int i=0; i<5; ++i) {
         for(int j=0; j<5; ++j) {
@@ -410,5 +404,87 @@ void Desktop::print_status() {
     for(int i=0; i<9; ++i) {
         printf("%c's direction:%d\n",people[i].id,people[i].get_deg());
     }
-}
+    printf("Holmes score:%d\n",score[0]);
+    printf("Jack score:%d\n",score[1]);
 
+}
+void Desktop::judge(){
+    judge(hol_tm.get_dog());
+    judge(hol_tm.get_wat());
+    judge(hol_tm.get_hol());
+}
+void Desktop::judge(int pos){
+    vector<District*> looker;
+    bool see(0);
+     int cur;
+    switch(pos){
+    case 1:case 2:case 3:
+        cur = pos + 1;
+        for(int i=1;i<4;i++){
+            for(int j=0;j<9;j){
+                if(map[i][cur]==string()+people[j].id){
+                    if(people[j].get_deg()!=270){
+                        looker.push_back(&people[j]);
+                        if(jack_id == people[j].id)see= true;
+                        break;
+                    }else{break;}
+                }
+            }
+        }
+        break;
+    case 4:case 5:case 6:
+        cur= pos-3;
+        for(int i=3;i>0;--i){
+            for(int j=0;j<9;j){
+                if(map[cur][i]==string()+people[j].id){
+                    if(people[j].get_deg()!=270){
+                        looker.push_back(&people[j]);
+                        if(jack_id == people[j].id)see= true;
+                        break;
+                    }else{break;}
+                }
+            }
+        }
+        break;
+    case 7:case 8:case 9://7 : 4 , 8: 3 ,9 : 2
+        cur = 11-pos;
+        for(int i=3;i>0;--i){
+            for(int j=0;j<9;j){
+                if(map[i][pos]==string()+people[j].id){
+                    if(people[j].get_deg()!=270){
+                        looker.push_back(&people[j]);
+                        if(jack_id == people[j].id)see= true;
+                        break;
+                    }else{break;}
+                }
+            }
+        }
+    break;
+    case 10:case 11:case 12:
+        cur = 13 - pos;
+        for(int i=3;i>0;--i){
+            for(int j=0;j<9;j){
+                if(map[cur][i]==string()+people[j].id){
+                    if(people[j].get_deg()!=270){
+                        looker.push_back(&people[j]);
+                        if(jack_id == people[j].id)see= true;
+                        break;
+                    }else{break;}
+                }
+            }
+        }
+        break;
+    }
+
+    if(see){
+
+        for(int i=0,sz=looker.size();i<sz;++i){
+            looker[i]->to_die();
+            printf("%c die\n",looker[i]->id);
+        }
+    }
+    else{
+
+    }
+    return ;
+}
