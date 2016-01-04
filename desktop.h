@@ -71,11 +71,11 @@ class Desktop {
 public :
 
     Desktop();
-    void parse_cmd(bool turn, int cnt, int* act_lock, bool* used);
+    void parse_cmd(bool turn, int cnt, bool* act_lock, bool* used);
     void print_map();
     void print_status();
     //inline void top(){printf("card top :%c\n",Card.top());};
-    friend void print_act(const Desktop& desk,int* act_lock);
+    friend void print_act(const Desktop& desk,bool* act_lock , bool* used);
     inline char get_jack(){return jack_id;}
 private:
     char display_map[9];
@@ -194,7 +194,7 @@ Desktop::Desktop() {
     jack_id = Card.top(); //initial jack identity;
     Card.pop();
 }
-void Desktop::parse_cmd(bool turn, int cnt, int* act_lock, bool* used) {//0 Holmes;1 jacks
+void Desktop::parse_cmd(bool turn, int cnt, bool* act_lock, bool* used) {//0 Holmes;1 jacks
     string cmd;
 	string acts[4];
 
@@ -287,7 +287,7 @@ void Desktop::parse_cmd(bool turn, int cnt, int* act_lock, bool* used) {//0 Holm
 						if(step > 0&& step <= 2 )break;
 						else cout <<"Error step !\n";
 					}
-					hol_tm.set_character_pos(Dog,step);
+					hol_tm.set_character_pos(Holmes,step);
 					break;
 				}
 			}
@@ -305,7 +305,7 @@ void Desktop::parse_cmd(bool turn, int cnt, int* act_lock, bool* used) {//0 Holm
 						if(step > 0&& step <= 2 )break;
 						else cout <<"Error step !\n";
 					}
-					hol_tm.set_character_pos(Dog,step%12);
+					hol_tm.set_character_pos(Watson,step);
 					break;
 				}
 			}
@@ -332,17 +332,23 @@ void Desktop::parse_cmd(bool turn, int cnt, int* act_lock, bool* used) {//0 Holm
 						if(cha == 30)break;
 						else {
 							while(cout <<"Input the step :",cin >>step) {
-								if(step > 0&& step <= 1 )break;
+								if(step > 0&& step <= 1 ){
+									hol_tm.set_character_pos(cha,step);
+									break;
+								}
 								else cout <<"Error step !\n";
 							}
 						}
+						break;
+						
 					}
 
 					else {
 						while(cout <<"Select the character (Holmes, Watson or Dog):",cin >>character){
-							if(character==string("Holmes"))cha= Holmes;break;
-							if(character==string("Watson"))cha= Watson;break;
-							if(character==string("Dog"))cha= Dog;break;
+							if(character==string("Holmes")){cha= Holmes;break;}
+							if(character==string("Watson")){cha= Watson;break;}
+							if(character==string("Dog")){cha= Dog;break;}
+							else cout<<"error character\n";
 						}
 						while(cout <<"Input the step :",cin >>step) {
 							if(step > 0&& step <= 1 )break;
@@ -354,6 +360,7 @@ void Desktop::parse_cmd(bool turn, int cnt, int* act_lock, bool* used) {//0 Holm
 				}
 			}
 			if(flag==false)cout<<"\"3in1\" is not available\n";
+			else break;
 
         }
 		else if(cmd == string("-spin")) {
