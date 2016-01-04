@@ -15,7 +15,8 @@ void print_act(const Desktop& desk,int* act_lock){
 int main()
 {
     int round(0),cnt=0;
-    bool turn[4]{0,1,1,0};
+    bool turn[4]{0,1,1,0};//false = holmes, true = jack
+	bool used[4]{false,false,false,false};
     Desktop desk;
     while(round != round_time){
         string id;
@@ -44,8 +45,11 @@ int main()
         desk.print_map(); // print desktop
         desk.print_status(); // status of districts
         print_act(desk,act_lock);// available act card
-        desk.parse_cmd(turn[cnt]);
-        if(cnt==4)round ++;
+        desk.parse_cmd(turn[cnt],cnt,act_lock,used);
+        if(cnt==4){
+			round ++;
+			for(int i = 0; i < 4; i++)used[i]= false;
+		}
         for(int i=0;i<4;i++)turn[i]=!turn[i];
         cnt = (cnt + 1) % 4;
     }
