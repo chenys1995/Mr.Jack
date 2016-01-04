@@ -197,10 +197,10 @@ Desktop::Desktop() {
 void Desktop::parse_cmd(bool turn, int cnt, int* act_lock, bool* used) {//0 Holmes;1 jacks
     string cmd;
 	string acts[4];
-	
+
 	for(int i=0;i<4;++i){
-		if(act_lock[i])acts[i] = desk.ActCard[i].first;
-		else if(!act_lock[i])acts[i] = desk.ActCard.second;
+		if(act_lock[i])acts[i] =ActCard[i].first;
+		else if(!act_lock[i])acts[i] = ActCard[i].second;
 	}
 	bool flag = false;
     while(cout <<"Input the command (it's the "<<((cnt==0)?"first":(cnt==1)?"second":(cnt==2)?"third":"forth")<<" move):",cin >>cmd) {
@@ -213,6 +213,7 @@ void Desktop::parse_cmd(bool turn, int cnt, int* act_lock, bool* used) {//0 Holm
 						switch(Card.top()) {
 						case 'a':
 							score[1]+= 1;
+
 							break;
 						case 'b':
 							score[1]+= 2;
@@ -240,11 +241,13 @@ void Desktop::parse_cmd(bool turn, int cnt, int* act_lock, bool* used) {//0 Holm
 							break;
 						}
 						Card.pop();
-					} 
+					}
 					else {
 						char d = Card.top();
 						for(int i=0; i<9; i++ ) {
-							if(people[i].id==d)people[i].die();
+							if(people[i].id==d){people[i].die();
+                                printf("%c die\n",d);
+							}
 							break;
 						}
 						Card.pop();
@@ -254,8 +257,8 @@ void Desktop::parse_cmd(bool turn, int cnt, int* act_lock, bool* used) {//0 Holm
 			}
 			if(flag==false)cout<<"\"draw\"is not available\n";
             else break;
-            
-        } 
+
+        }
 		else if(cmd == string("-dog")) {
 			for(int i = 0 ; i < 4; i++){
 				if(acts[i]=="Dog"&&used[i]==false){
@@ -272,8 +275,8 @@ void Desktop::parse_cmd(bool turn, int cnt, int* act_lock, bool* used) {//0 Holm
 			}
 			if(flag==false)cout<<"\"dog\" is not available\n";
 			else break;
-            
-        } 
+
+        }
 		else if(cmd == string("-hol")) {
 			for(int i = 0; i<4 ; i++){
 				if(acts[i]=="Holmes"&&used[i]==false){
@@ -290,8 +293,8 @@ void Desktop::parse_cmd(bool turn, int cnt, int* act_lock, bool* used) {//0 Holm
 			}
 			if(flag==false)cout<<"\"Holmes\" is not available\n";
 			else break;
-            
-        } 
+
+        }
 		else if(cmd == string("-wat")) {
 			for(int i = 0; i < 4; i++){
 				if(acts[i]=="Watson"&&used[i]==false){
@@ -302,19 +305,19 @@ void Desktop::parse_cmd(bool turn, int cnt, int* act_lock, bool* used) {//0 Holm
 						if(step > 0&& step <= 2 )break;
 						else cout <<"Error step !\n";
 					}
-					hol_tm.set_character_pos(Dog,step)%12);
+					hol_tm.set_character_pos(Dog,step%12);
 					break;
 				}
 			}
 			if(flag ==false)cout<<"\"Watson\" is not available\n";
 			else break;
-            
-        } 
+
+        }
 		else if(cmd == string("-3in1")) {
 			for(int i = 0 ; i < 4; i++){
 				if("3in1"==acts[i]&&used[i]==false){
 					used[i]=true;
-					flag = true; 
+					flag = true;
 					string character;
 					int cha;
 					int step;
@@ -334,7 +337,7 @@ void Desktop::parse_cmd(bool turn, int cnt, int* act_lock, bool* used) {//0 Holm
 							}
 						}
 					}
-			
+
 					else {
 						while(cout <<"Select the character (Holmes, Watson or Dog):",cin >>character){
 							if(character==string("Holmes"))cha= Holmes;break;
@@ -351,7 +354,7 @@ void Desktop::parse_cmd(bool turn, int cnt, int* act_lock, bool* used) {//0 Holm
 				}
 			}
 			if(flag==false)cout<<"\"3in1\" is not available\n";
-           
+
         }
 		else if(cmd == string("-spin")) {
 			for(int i = 0; i < 4; i++){
@@ -369,16 +372,17 @@ void Desktop::parse_cmd(bool turn, int cnt, int* act_lock, bool* used) {//0 Holm
 						else cout <<"Error degree !\n";
 					}
 					for(int i=0; i<9; i++ ) {
-						if(people[i].id==sel)people[i].set_direction(deg % 360);
-						break;
+						if(people[i].id==sel){
+                            if(people[i].set_direction(deg % 360)==-1)cout <<"Error set direction\n";
+						break;}
 					}
 					break;
 				}
 			}
 			if(flag == false)cout<<"\"Spin\" is not available\n";
 			else break;
-            
-        } 
+
+        }
 		else if(cmd == string("-xhcg")) {
 			for(int i = 0 ;i < 4; i++){
 				if(acts[i]=="Exchange"&&used[i]==false){
@@ -403,11 +407,11 @@ void Desktop::parse_cmd(bool turn, int cnt, int* act_lock, bool* used) {//0 Holm
 					std::swap(people[p3],people[p4]);
 					break;
 				}
-				
+
 			}
-			if(flag==false)cout<<\"Exchange\" is not available\n";
+			if(flag==false)cout<<"\"Exchange\" is not available\n";
 			else break;
-			
+
         }
 		else if(cmd == string("-help")){
 			printf("-draw\n");
@@ -509,4 +513,5 @@ void Desktop::print_status() {
     for(int i=0; i<9; ++i) {
         printf("%c's direction:%d\n",people[i].id,people[i].get_deg());
     }
+    printf("jack score :%d\nholmes score :%d\n",score[1],score[0]);
 }
