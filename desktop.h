@@ -34,6 +34,7 @@ public :
     int set_direction(int deg); // set the direction of card; //deg = 0~270
     int get_deg(); //get the direction of card now;
     inline bool die() {
+        cout <<id<<" die\n";
         dead = true;
     }; // turn over the card
     inline bool isDie() {
@@ -244,11 +245,13 @@ void Desktop::parse_cmd(bool turn, int cnt, bool* act_lock, bool* used) {//0 Hol
 					}
 					else {
 						char d = Card.top();
+
 						for(int i=0; i<9; i++ ) {
-							if(people[i].id==d){people[i].die();
-                                printf("%c die\n",d);
+
+							if(people[i].id==d){
+                                people[i].die();break;
 							}
-							break;
+
 						}
 						Card.pop();
 					}
@@ -340,7 +343,7 @@ void Desktop::parse_cmd(bool turn, int cnt, bool* act_lock, bool* used) {//0 Hol
 							}
 						}
 						break;
-						
+
 					}
 
 					else {
