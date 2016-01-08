@@ -79,7 +79,6 @@ public :
     friend void print_act(const Desktop& desk,bool* act_lock , bool* used);
     inline char get_jack(){return jack_id;}
 private:
-    char display_map[9];
     District people[9] {'a','b','c','d','e','f','g','h','i'};
     char jack_id;
     Holmes_team hol_tm;
@@ -173,12 +172,9 @@ void Holmes_team::get_all_pos() {
 Desktop::Desktop() {
     score[0]=0;
     score[1]=0;
-    int num[9] {0,1,2,3,4,5,6,7,8};
     // shuffle 9 districts
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-    shuffle(begin(num),end(num),std::default_random_engine(seed));
-    char* p=display_map;
-    for(int i=0; i<9; ++i)*p=people[num[i]].id,++p;
+    shuffle(begin(people),end(people),std::default_random_engine(seed));
     // act card shuffle
     pair<string,string>  act[4] {
         pair<string,string>(string("draw card"),string("Watson")),
@@ -406,14 +402,11 @@ void Desktop::parse_cmd(bool turn, int cnt, bool* act_lock, bool* used) {//0 Hol
 						if(sel1>='a'&&sel1<='i'&&sel2>='a'&&sel2<='i'&&sel1!=sel2)break;
 						else cout<<"Input error!\n";
 					}
-					int p1=0,p2=0,p3=0,p4=0;
+					int p3=0,p4=0;
 					for(int i=0; i<9; i++ ) {
-						if(display_map[i]==sel1)p1=i;
-						if(display_map[i]==sel2)p2=i;
 						if(people[i].id==sel1)p3=i;
 						if(people[i].id==sel2)p4=i;
 					}
-					std::swap(display_map[p1],display_map[p2]);
 					std::swap(people[p3],people[p4]);
 					break;
 				}
@@ -502,14 +495,10 @@ void Desktop::print_map() {
     int k=0;
     for(int i=1; i<4; ++i)
         for(int j=1; j<4; ++j) {
-            int ch;
-            for(int i=0; i<9; i++ ) {
-                if(people[i].id==display_map[k])ch=i;
-            }
-            if(people[ch].isDie()) {
+            if(people[k].isDie()) {
                 map[i][j]=string()+'0';
                 k++;
-            } else map[i][j]=string()+display_map[k++];
+            } else map[i][j]=string()+people[k++].id;
         }
     for(int i=0; i<5; ++i) {
         for(int j=0; j<5; ++j) {
@@ -521,7 +510,9 @@ void Desktop::print_map() {
 }
 void Desktop::print_status() {
     for(int i=0; i<9; ++i) {
-        printf("%c's direction:%d\n",people[i].id,people[i].get_deg());
+        printf("%c's direction:%d\t",people[i].id,people[i].get_deg());
+        if(people[i].get_deg() ==0)printf("\t");
+        if(i%3==2)printf("\n");
     }
     printf("jack score :%d\nholmes score :%d\n",score[1],score[0]);
 }
