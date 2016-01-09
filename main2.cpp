@@ -41,7 +41,7 @@ int main()
 		
         if(cnt==4){
 			round ++;
-			cout<<"jesus is a ";
+			desk.suspect_check(round);
 			seed = std::chrono::system_clock::now().time_since_epoch().count();
 			srand(seed);
 			cnt = 0;
@@ -50,12 +50,11 @@ int main()
 			if(round%2 !=0){
 				for(int i=0;i<4;++i)
 					act_lock[i]=rand()%2;//1 front ;0 back;
-				cout<<"sucker\n";
+				
 			}
 			else {
 				for(int i = 0; i <4 ;++i)
-					act_lock[i]=((act_lock[i])?false:true);
-				cout<<"fucker\n";
+					act_lock[i]=((act_lock[i])?false:true);				
 			}
 		}
         // throw action card
@@ -69,7 +68,7 @@ int main()
         desk.print_status(); // status of districts
         print_act(desk,act_lock,used);// available act card
         desk.parse_cmd(turn[cnt],cnt,act_lock,used);
-
+		
         cnt++;
     }
 	return 0;

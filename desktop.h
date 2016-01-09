@@ -9,6 +9,7 @@
 #include <stack>
 #include <random>       // std::default_random_engine
 #include <chrono>       // std::chrono::system_clock
+#include <map>
 #define UP 0
 #define RIGHT 1
 #define DOWN 2
@@ -34,8 +35,10 @@ public :
     int set_direction(int deg); // set the direction of card; //deg = 0~270
     int get_deg(); //get the direction of card now;
     inline bool die() {
-        cout <<id<<" die\n";
+        if(dead == false){
+		cout <<id<<" die\n";
         dead = true;
+		}
     }; // turn over the card
     inline bool isDie() {
         return dead;
@@ -78,12 +81,14 @@ public :
     //inline void top(){printf("card top :%c\n",Card.top());};
     friend void print_act(const Desktop& desk,bool* act_lock , bool* used);
     inline char get_jack(){return jack_id;}
+	void suspect_check(int round);
+
 private:
     District people[9] {'a','b','c','d','e','f','g','h','i'};
     char jack_id;
     Holmes_team hol_tm;
     stack<char> Card;
-    int score[2];
+    int score;
     pair<string,string> ActCard[4];
 };
 District::District(char c): id(tolower(c)) {
@@ -170,8 +175,8 @@ void Holmes_team::get_all_pos() {
 //     0,3 1,3 2,3 3,3 4,3
 //     0,4 1,4 2,4 3,4 4,4
 Desktop::Desktop() {
-    score[0]=0;
-    score[1]=0;
+    score=0;
+    
     // shuffle 9 districts
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     shuffle(begin(people),end(people),std::default_random_engine(seed));
@@ -209,32 +214,32 @@ void Desktop::parse_cmd(bool turn, int cnt, bool* act_lock, bool* used) {//0 Hol
 					if(turn) {
 						switch(Card.top()) {
 						case 'a':
-							score[1]+= 1;
+							score+= 1;
 
 							break;
 						case 'b':
-							score[1]+= 2;
+							score+= 2;
 							break;
 						case 'c':
-							score[1]+= 1;
+							score+= 1;
 							break;
 						case 'd':
-							score[1]+= 1;
+							score+= 1;
 							break;
 						case 'e':
-							score[1]+= 1;
+							score+= 1;
 							break;
 						case 'f':
-							score[1]+= 1;
+							score+= 1;
 							break;
 						case 'g':
-							score[1]+= 1;
+							score+= 1;
 							break;
 						case 'h':
-							score[1]+= 0;
+							score+= 0;
 							break;
 						case 'i':
-							score[1]+= 0;
+							score+= 0;
 							break;
 						}
 						Card.pop();
@@ -514,5 +519,742 @@ void Desktop::print_status() {
         if(people[i].get_deg() ==0)printf("\t");
         if(i%3==2)printf("\n");
     }
-    printf("jack score :%d\nholmes score :%d\n",score[1],score[0]);
+    printf("jack score :%d\n",score);
 }
+void Desktop::suspect_check(int round){
+	map <char,bool> seen;
+	int hol = hol_tm.get_hol();
+	int dog = hol_tm.get_dog();
+	int wat = hol_tm.get_wat();
+	char jack = get_jack();
+	seen['a']=false;
+	seen['b']=false;
+	seen['c']=false;
+	seen['d']=false;
+	seen['e']=false;
+	seen['f']=false;
+	seen['g']=false;
+	seen['h']=false;
+	seen['i']=false;
+	switch(hol){
+		case 1:
+			if(people[0].get_deg() == 0)break;
+			else if(people[0].get_deg() == 180||people[3].get_deg() == 0){
+				seen[people[0].id]=true;
+				break;
+			}
+			else if(people[3].get_deg() == 180||people[6].get_deg() == 0){
+				seen[people[0].id] = true;
+				seen[people[3].id] = true;
+				break;
+			}
+			else {
+				seen[people[0].id] = true;
+				seen[people[3].id] = true;
+				seen[people[6].id] = true;
+				break;
+			}
+		case 2:
+			if(people[1].get_deg() == 0)break;
+			else if(people[1].get_deg() == 180||people[4].get_deg() == 0){
+				seen[people[1].id]=true;
+				break;
+			}
+			else if(people[4].get_deg() == 180||people[7].get_deg() == 0){
+				seen[people[1].id] = true;
+				seen[people[4].id] = true;
+				break;
+			}
+			else {
+				seen[people[1].id] = true;
+				seen[people[4].id] = true;
+				seen[people[7].id] = true;
+				break;
+			}
+		case 3:
+			if(people[2].get_deg() == 0)break;
+			else if(people[2].get_deg() == 180||people[5].get_deg() == 0){
+				seen[people[2].id]=true;
+				break;
+			}
+			else if(people[5].get_deg() == 180||people[8].get_deg() == 0){
+				seen[people[2].id] = true;
+				seen[people[5].id] = true;
+				break;
+			}
+			else {
+				seen[people[2].id] = true;
+				seen[people[5].id] = true;
+				seen[people[8].id] = true;
+				break;
+			}
+		case 4:
+			if(people[2].get_deg()==90)break;
+			else if(people[2].get_deg() == 270 || people[1].get_deg() == 90){
+				seen[people[2].id] = true;
+				break;
+			}
+			else if(people[1].get_deg() == 270 || people[0].get_deg() == 90){
+				seen[people[2].id] = true;
+				seen[people[1].id] = true;
+				break;
+			}
+			else{
+				seen[people[2].id] = true;
+				seen[people[1].id] = true;
+				seen[people[0].id] = true;
+				break;
+			}
+		case 5:
+			if(people[5].get_deg()==90)break;
+			else if(people[5].get_deg() == 270 || people[4].get_deg() == 90){
+				seen[people[5].id] = true;
+				break;
+			}
+			else if(people[4].get_deg() == 270 || people[3].get_deg() == 90){
+				seen[people[5].id] = true;
+				seen[people[4].id] = true;
+				break;
+			}
+			else{
+				seen[people[5].id] = true;
+				seen[people[4].id] = true;
+				seen[people[3].id] = true;
+				break;
+			}
+		case 6:
+			if(people[8].get_deg()==90)break;
+			else if(people[8].get_deg() == 270 || people[7].get_deg() == 90){
+				seen[people[8].id] = true;
+				break;
+			}
+			else if(people[7].get_deg() == 270 || people[6].get_deg() == 90){
+				seen[people[8].id] = true;
+				seen[people[7].id] = true;
+				break;
+			}
+			else{
+				seen[people[8].id] = true;
+				seen[people[7].id] = true;
+				seen[people[6].id] = true;
+				break;
+			}
+		case 7:
+			if(people[8].get_deg()==180)break;
+			else if(people[8].get_deg()==0||people[5].get_deg()==180){
+				seen[people[8].id] = true;
+				break;
+			}
+			else if(people[5].get_deg() == 0|| people[2].get_deg()==180){
+				seen[people[8].id] = true;
+				seen[people[5].id] = true;
+				break;
+			}
+			else {
+				seen[people[8].id] = true;
+				seen[people[5].id] = true;
+				seen[people[2].id] = true;
+				break;
+			}
+		case 8:
+			if(people[7].get_deg()==180)break;
+			else if(people[7].get_deg()==0||people[4].get_deg()==180){
+				seen[people[7].id] = true;
+				break;
+			}
+			else if(people[4].get_deg() == 0|| people[1].get_deg()==180){
+				seen[people[7].id] = true;
+				seen[people[4].id] = true;
+				break;
+			}
+			else {
+				seen[people[7].id] = true;
+				seen[people[4].id] = true;
+				seen[people[1].id] = true;
+				break;
+			}
+		case 9:
+			if(people[6].get_deg()==180)break;
+			else if(people[6].get_deg()==0||people[3].get_deg()==180){
+				seen[people[6].id] = true;
+				break;
+			}
+			else if(people[3].get_deg() == 0|| people[0].get_deg()==180){
+				seen[people[6].id] = true;
+				seen[people[3].id] = true;
+				break;
+			}
+			else {
+				seen[people[6].id] = true;
+				seen[people[3].id] = true;
+				seen[people[0].id] = true;
+				break;
+			}
+		case 10:
+			if(people[6].get_deg()==270)break;
+			else if(people[6].get_deg()==90||people[7].get_deg()==270){
+				seen[people[6].id] = true;
+				break;
+			}
+			else if(people[7].get_deg()==90||people[8].get_deg()==270){
+				seen[people[6].id] = true;
+				seen[people[7].id] = true;
+				break;
+			}
+			else {
+				seen[people[6].id] = true;
+				seen[people[7].id] = true;
+				seen[people[8].id] = true;
+				break;
+			}
+		case 11:
+			if(people[3].get_deg()==270)break;
+			else if(people[3].get_deg()==90||people[4].get_deg()==270){
+				seen[people[3].id] = true;
+				break;
+			}
+			else if(people[4].get_deg()==90||people[5].get_deg()==270){
+				seen[people[3].id] = true;
+				seen[people[4].id] = true;
+				break;
+			}
+			else {
+				seen[people[3].id] = true;
+				seen[people[4].id] = true;
+				seen[people[5].id] = true;
+				break;
+			}
+		case 12:
+			if(people[0].get_deg()==270)break;
+			else if(people[0].get_deg()==90||people[1].get_deg()==270){
+				seen[people[0].id] = true;
+				break;
+			}
+			else if(people[1].get_deg()==90||people[2].get_deg()==270){
+				seen[people[0].id] = true;
+				seen[people[1].id] = true;
+				break;
+			}
+			else {
+				seen[people[0].id] = true;
+				seen[people[1].id] = true;
+				seen[people[2].id] = true;
+				break;
+			}
+		default:
+			cout<<"get_hol error in suspect_check\n";
+	}
+	switch(dog){
+		case 1:
+			if(people[0].get_deg() == 0)break;
+			else if(people[0].get_deg() == 180||people[3].get_deg() == 0){
+				seen[people[0].id]=true;
+				break;
+			}
+			else if(people[3].get_deg() == 180||people[6].get_deg() == 0){
+				seen[people[0].id] = true;
+				seen[people[3].id] = true;
+				break;
+			}
+			else {
+				seen[people[0].id] = true;
+				seen[people[3].id] = true;
+				seen[people[6].id] = true;
+				break;
+			}
+		case 2:
+			if(people[1].get_deg() == 0)break;
+			else if(people[1].get_deg() == 180||people[4].get_deg() == 0){
+				seen[people[1].id]=true;
+				break;
+			}
+			else if(people[4].get_deg() == 180||people[7].get_deg() == 0){
+				seen[people[1].id] = true;
+				seen[people[4].id] = true;
+				break;
+			}
+			else {
+				seen[people[1].id] = true;
+				seen[people[4].id] = true;
+				seen[people[7].id] = true;
+				break;
+			}
+		case 3:
+			if(people[2].get_deg() == 0)break;
+			else if(people[2].get_deg() == 180||people[5].get_deg() == 0){
+				seen[people[2].id]=true;
+				break;
+			}
+			else if(people[5].get_deg() == 180||people[8].get_deg() == 0){
+				seen[people[2].id] = true;
+				seen[people[5].id] = true;
+				break;
+			}
+			else {
+				seen[people[2].id] = true;
+				seen[people[5].id] = true;
+				seen[people[8].id] = true;
+				break;
+			}
+		case 4:
+			if(people[2].get_deg()==90)break;
+			else if(people[2].get_deg() == 270 || people[1].get_deg() == 90){
+				seen[people[2].id] = true;
+				break;
+			}
+			else if(people[1].get_deg() == 270 || people[0].get_deg() == 90){
+				seen[people[2].id] = true;
+				seen[people[1].id] = true;
+				break;
+			}
+			else{
+				seen[people[2].id] = true;
+				seen[people[1].id] = true;
+				seen[people[0].id] = true;
+				break;
+			}
+		case 5:
+			if(people[5].get_deg()==90)break;
+			else if(people[5].get_deg() == 270 || people[4].get_deg() == 90){
+				seen[people[5].id] = true;
+				break;
+			}
+			else if(people[4].get_deg() == 270 || people[3].get_deg() == 90){
+				seen[people[5].id] = true;
+				seen[people[4].id] = true;
+				break;
+			}
+			else{
+				seen[people[5].id] = true;
+				seen[people[4].id] = true;
+				seen[people[3].id] = true;
+				break;
+			}
+		case 6:
+			if(people[8].get_deg()==90)break;
+			else if(people[8].get_deg() == 270 || people[7].get_deg() == 90){
+				seen[people[8].id] = true;
+				break;
+			}
+			else if(people[7].get_deg() == 270 || people[6].get_deg() == 90){
+				seen[people[8].id] = true;
+				seen[people[7].id] = true;
+				break;
+			}
+			else{
+				seen[people[8].id] = true;
+				seen[people[7].id] = true;
+				seen[people[6].id] = true;
+				break;
+			}
+		case 7:
+			if(people[8].get_deg()==180)break;
+			else if(people[8].get_deg()==0||people[5].get_deg()==180){
+				seen[people[8].id] = true;
+				break;
+			}
+			else if(people[5].get_deg() == 0|| people[2].get_deg()==180){
+				seen[people[8].id] = true;
+				seen[people[5].id] = true;
+				break;
+			}
+			else {
+				seen[people[8].id] = true;
+				seen[people[5].id] = true;
+				seen[people[2].id] = true;
+				break;
+			}
+		case 8:
+			if(people[7].get_deg()==180)break;
+			else if(people[7].get_deg()==0||people[4].get_deg()==180){
+				seen[people[7].id] = true;
+				break;
+			}
+			else if(people[4].get_deg() == 0|| people[1].get_deg()==180){
+				seen[people[7].id] = true;
+				seen[people[4].id] = true;
+				break;
+			}
+			else {
+				seen[people[7].id] = true;
+				seen[people[4].id] = true;
+				seen[people[1].id] = true;
+				break;
+			}
+		case 9:
+			if(people[6].get_deg()==180)break;
+			else if(people[6].get_deg()==0||people[3].get_deg()==180){
+				seen[people[6].id] = true;
+				break;
+			}
+			else if(people[3].get_deg() == 0|| people[0].get_deg()==180){
+				seen[people[6].id] = true;
+				seen[people[3].id] = true;
+				break;
+			}
+			else {
+				seen[people[6].id] = true;
+				seen[people[3].id] = true;
+				seen[people[0].id] = true;
+				break;
+			}
+		case 10:
+			if(people[6].get_deg()==270)break;
+			else if(people[6].get_deg()==90||people[7].get_deg()==270){
+				seen[people[6].id] = true;
+				break;
+			}
+			else if(people[7].get_deg()==90||people[8].get_deg()==270){
+				seen[people[6].id] = true;
+				seen[people[7].id] = true;
+				break;
+			}
+			else {
+				seen[people[6].id] = true;
+				seen[people[7].id] = true;
+				seen[people[8].id] = true;
+				break;
+			}
+		case 11:
+			if(people[3].get_deg()==270)break;
+			else if(people[3].get_deg()==90||people[4].get_deg()==270){
+				seen[people[3].id] = true;
+				break;
+			}
+			else if(people[4].get_deg()==90||people[5].get_deg()==270){
+				seen[people[3].id] = true;
+				seen[people[4].id] = true;
+				break;
+			}
+			else {
+				seen[people[3].id] = true;
+				seen[people[4].id] = true;
+				seen[people[5].id] = true;
+				break;
+			}
+		case 12:
+			if(people[0].get_deg()==270)break;
+			else if(people[0].get_deg()==90||people[1].get_deg()==270){
+				seen[people[0].id] = true;
+				break;
+			}
+			else if(people[1].get_deg()==90||people[2].get_deg()==270){
+				seen[people[0].id] = true;
+				seen[people[1].id] = true;
+				break;
+			}
+			else {
+				seen[people[0].id] = true;
+				seen[people[1].id] = true;
+				seen[people[2].id] = true;
+				break;
+			}
+		default:
+			cout<<"get_hol error in suspect_check\n";
+	}
+	switch(wat){
+		case 1:
+			if(people[0].get_deg() == 0)break;
+			else if(people[0].get_deg() == 180||people[3].get_deg() == 0){
+				seen[people[0].id]=true;
+				break;
+			}
+			else if(people[3].get_deg() == 180||people[6].get_deg() == 0){
+				seen[people[0].id] = true;
+				seen[people[3].id] = true;
+				break;
+			}
+			else {
+				seen[people[0].id] = true;
+				seen[people[3].id] = true;
+				seen[people[6].id] = true;
+				break;
+			}
+		case 2:
+			if(people[1].get_deg() == 0)break;
+			else if(people[1].get_deg() == 180||people[4].get_deg() == 0){
+				seen[people[1].id]=true;
+				break;
+			}
+			else if(people[4].get_deg() == 180||people[7].get_deg() == 0){
+				seen[people[1].id] = true;
+				seen[people[4].id] = true;
+				break;
+			}
+			else {
+				seen[people[1].id] = true;
+				seen[people[4].id] = true;
+				seen[people[7].id] = true;
+				break;
+			}
+		case 3:
+			if(people[2].get_deg() == 0)break;
+			else if(people[2].get_deg() == 180||people[5].get_deg() == 0){
+				seen[people[2].id]=true;
+				break;
+			}
+			else if(people[5].get_deg() == 180||people[8].get_deg() == 0){
+				seen[people[2].id] = true;
+				seen[people[5].id] = true;
+				break;
+			}
+			else {
+				seen[people[2].id] = true;
+				seen[people[5].id] = true;
+				seen[people[8].id] = true;
+				break;
+			}
+		case 4:
+			if(people[2].get_deg()==90)break;
+			else if(people[2].get_deg() == 270 || people[1].get_deg() == 90){
+				seen[people[2].id] = true;
+				break;
+			}
+			else if(people[1].get_deg() == 270 || people[0].get_deg() == 90){
+				seen[people[2].id] = true;
+				seen[people[1].id] = true;
+				break;
+			}
+			else{
+				seen[people[2].id] = true;
+				seen[people[1].id] = true;
+				seen[people[0].id] = true;
+				break;
+			}
+		case 5:
+			if(people[5].get_deg()==90)break;
+			else if(people[5].get_deg() == 270 || people[4].get_deg() == 90){
+				seen[people[5].id] = true;
+				break;
+			}
+			else if(people[4].get_deg() == 270 || people[3].get_deg() == 90){
+				seen[people[5].id] = true;
+				seen[people[4].id] = true;
+				break;
+			}
+			else{
+				seen[people[5].id] = true;
+				seen[people[4].id] = true;
+				seen[people[3].id] = true;
+				break;
+			}
+		case 6:
+			if(people[8].get_deg()==90)break;
+			else if(people[8].get_deg() == 270 || people[7].get_deg() == 90){
+				seen[people[8].id] = true;
+				break;
+			}
+			else if(people[7].get_deg() == 270 || people[6].get_deg() == 90){
+				seen[people[8].id] = true;
+				seen[people[7].id] = true;
+				break;
+			}
+			else{
+				seen[people[8].id] = true;
+				seen[people[7].id] = true;
+				seen[people[6].id] = true;
+				break;
+			}
+		case 7:
+			if(people[8].get_deg()==180)break;
+			else if(people[8].get_deg()==0||people[5].get_deg()==180){
+				seen[people[8].id] = true;
+				break;
+			}
+			else if(people[5].get_deg() == 0|| people[2].get_deg()==180){
+				seen[people[8].id] = true;
+				seen[people[5].id] = true;
+				break;
+			}
+			else {
+				seen[people[8].id] = true;
+				seen[people[5].id] = true;
+				seen[people[2].id] = true;
+				break;
+			}
+		case 8:
+			if(people[7].get_deg()==180)break;
+			else if(people[7].get_deg()==0||people[4].get_deg()==180){
+				seen[people[7].id] = true;
+				break;
+			}
+			else if(people[4].get_deg() == 0|| people[1].get_deg()==180){
+				seen[people[7].id] = true;
+				seen[people[4].id] = true;
+				break;
+			}
+			else {
+				seen[people[7].id] = true;
+				seen[people[4].id] = true;
+				seen[people[1].id] = true;
+				break;
+			}
+		case 9:
+			if(people[6].get_deg()==180)break;
+			else if(people[6].get_deg()==0||people[3].get_deg()==180){
+				seen[people[6].id] = true;
+				break;
+			}
+			else if(people[3].get_deg() == 0|| people[0].get_deg()==180){
+				seen[people[6].id] = true;
+				seen[people[3].id] = true;
+				break;
+			}
+			else {
+				seen[people[6].id] = true;
+				seen[people[3].id] = true;
+				seen[people[0].id] = true;
+				break;
+			}
+		case 10:
+			if(people[6].get_deg()==270)break;
+			else if(people[6].get_deg()==90||people[7].get_deg()==270){
+				seen[people[6].id] = true;
+				break;
+			}
+			else if(people[7].get_deg()==90||people[8].get_deg()==270){
+				seen[people[6].id] = true;
+				seen[people[7].id] = true;
+				break;
+			}
+			else {
+				seen[people[6].id] = true;
+				seen[people[7].id] = true;
+				seen[people[8].id] = true;
+				break;
+			}
+		case 11:
+			if(people[3].get_deg()==270)break;
+			else if(people[3].get_deg()==90||people[4].get_deg()==270){
+				seen[people[3].id] = true;
+				break;
+			}
+			else if(people[4].get_deg()==90||people[5].get_deg()==270){
+				seen[people[3].id] = true;
+				seen[people[4].id] = true;
+				break;
+			}
+			else {
+				seen[people[3].id] = true;
+				seen[people[4].id] = true;
+				seen[people[5].id] = true;
+				break;
+			}
+		case 12:
+			if(people[0].get_deg()==270)break;
+			else if(people[0].get_deg()==90||people[1].get_deg()==270){
+				seen[people[0].id] = true;
+				break;
+			}
+			else if(people[1].get_deg()==90||people[2].get_deg()==270){
+				seen[people[0].id] = true;
+				seen[people[1].id] = true;
+				break;
+			}
+			else {
+				seen[people[0].id] = true;
+				seen[people[1].id] = true;
+				seen[people[2].id] = true;
+				break;
+			}
+		default:
+			cout<<"get_hol error in suspect_check\n";
+	}
+	if(seen[jack]){
+		if(!seen['a']){
+			for(int i = 0 ; i < 9; i++){
+				if(people[i].id=='a'){people[i].die();break;}
+			}
+		}
+		if(!seen['b']){
+			for(int i = 0 ; i < 9; i++){
+				if(people[i].id=='b'){people[i].die();break;}
+			}
+		}
+		if(!seen['c']){
+			for(int i = 0 ; i < 9; i++){
+				if(people[i].id=='c'){people[i].die();break;}
+			}
+		}
+		if(!seen['d']){
+			for(int i = 0 ; i < 9; i++){
+				if(people[i].id=='d'){people[i].die();break;}
+			}
+		}
+		if(!seen['e']){
+			for(int i = 0 ; i < 9; i++){
+				if(people[i].id=='e'){people[i].die();break;}
+			}
+		}
+		if(!seen['f']){
+			for(int i = 0 ; i < 9; i++){
+				if(people[i].id=='f'){people[i].die();break;}
+			}
+		}
+		if(!seen['g']){
+			for(int i = 0 ; i < 9; i++){
+				if(people[i].id=='g'){people[i].die();break;}
+			}
+		}
+		if(!seen['h']){
+			for(int i = 0 ; i < 9; i++){
+				if(people[i].id=='h'){people[i].die();break;}
+			}
+		}
+		if(!seen['i']){
+			for(int i = 0 ; i < 9; i++){
+				if(people[i].id=='i'){people[i].die();break;}
+			}
+		}
+	}
+	else {
+		score++;
+		if(seen['a']){
+			for(int i = 0 ; i < 9; i++){
+				if(people[i].id=='a'){people[i].die();break;}
+			}
+		}
+		if(seen['b']){
+			for(int i = 0 ; i < 9; i++){
+				if(people[i].id=='b'){people[i].die();break;}
+			}
+		}
+		if(seen['c']){
+			for(int i = 0 ; i < 9; i++){
+				if(people[i].id=='c'){people[i].die();break;}
+			}
+		}
+		if(seen['d']){
+			for(int i = 0 ; i < 9; i++){
+				if(people[i].id=='d'){people[i].die();break;}
+			}
+		}
+		if(seen['e']){
+			for(int i = 0 ; i < 9; i++){
+				if(people[i].id=='e'){people[i].die();break;}
+			}
+		}
+		if(seen['f']){
+			for(int i = 0 ; i < 9; i++){
+				if(people[i].id=='f'){people[i].die();break;}
+			}
+		}
+		if(seen['g']){
+			for(int i = 0 ; i < 9; i++){
+				if(people[i].id=='g'){people[i].die();break;}
+			}
+		}
+		if(seen['h']){
+			for(int i = 0 ; i < 9; i++){
+				if(people[i].id=='h'){people[i].die();break;}
+			}
+		}
+		if(seen['i']){
+			for(int i = 0 ; i < 9; i++){
+				if(people[i].id=='i'){people[i].die();break;}
+			}
+		}
+	}
+
+}
+
