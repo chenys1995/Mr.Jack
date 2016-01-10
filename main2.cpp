@@ -42,6 +42,7 @@ int main()
         if(cnt==4){
 			round ++;
 			desk.suspect_check(round);
+			if(desk.isOver())break;
 			seed = std::chrono::system_clock::now().time_since_epoch().count();
 			srand(seed);
 			cnt = 0;

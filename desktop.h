@@ -82,6 +82,7 @@ public :
     friend void print_act(const Desktop& desk,bool* act_lock , bool* used);
     inline char get_jack(){return jack_id;}
 	void suspect_check(int round);
+	inline bool isOver(){return gameover;}
 
 private:
     District people[9] {'a','b','c','d','e','f','g','h','i'};
@@ -90,6 +91,7 @@ private:
     stack<char> Card;
     int score;
     pair<string,string> ActCard[4];
+	bool gameover;
 };
 District::District(char c): id(tolower(c)) {
     //initialize foreground road
@@ -176,7 +178,7 @@ void Holmes_team::get_all_pos() {
 //     0,4 1,4 2,4 3,4 4,4
 Desktop::Desktop() {
     score=0;
-    
+    gameover = false;
     // shuffle 9 districts
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     shuffle(begin(people),end(people),std::default_random_engine(seed));
@@ -1255,6 +1257,31 @@ void Desktop::suspect_check(int round){
 			}
 		}
 	}
-
+	int dead = 0;
+	for(int i = 0; i < 9; i++){
+		if(people[i].isDie())
+			dead++;
+	}
+	if(score >= 6){
+		if(dead == 8){
+			if(seen[jack]){
+				cout<<"holmes wins\n";
+				gameover = true;
+			}
+			else if(round == 9){
+				cout<<"jack wins\n";
+				gameover = true;
+			}
+		}
+		else {
+			cout<<"jack wins\n";
+			gameover = true;
+		}
+	}
+	else if(dead == 8 ){
+		cout<<"holmes wins\n";
+		gameover = true;
+	}
+	
 }
 
