@@ -83,13 +83,14 @@ public :
     inline char get_jack(){return jack_id;}
 	void suspect_check(int round);
 	inline bool isOver(){return gameover;}
-
+    bool player_id;
 private:
     District people[9] {'a','b','c','d','e','f','g','h','i'};
     char jack_id;
     Holmes_team hol_tm;
     stack<char> Card;
     int score;
+
     pair<string,string> ActCard[4];
 	bool gameover;
 };
@@ -207,233 +208,344 @@ void Desktop::parse_cmd(bool turn, int cnt, bool* act_lock, bool* used) {//0 Hol
 		else if(!act_lock[i])acts[i] = ActCard[i].second;
 	}
 	bool flag = false;
-    while(cout <<"Input the command (it's the "<<((cnt==0)?"first":(cnt==1)?"second":(cnt==2)?"third":"forth")<<" move):",cin >>cmd) {
-        if(cmd == string("-draw")) {
-			for(int i = 0; i < 4; i++){
-				if(acts[i]=="draw card"&&used[i]==false){//if draw is available
-					flag = true;
-					used[i] = true;
-					if(turn) {
-						switch(Card.top()) {
-						case 'a':
-							score+= 1;
+	if(player_id == turn){
+        while(cout <<"Input the command (it's the "<<((cnt==0)?"first":(cnt==1)?"second":(cnt==2)?"third":"forth")<<" move):",cin >>cmd) {
+            if(cmd == string("-draw")) {
+                for(int i = 0; i < 4; i++){
+                    if(acts[i]=="draw card"&&used[i]==false){//if draw is available
+                        flag = true;
+                        used[i] = true;
+                        if(turn) {
+                            switch(Card.top()) {
+                            case 'a':
+                                score+= 1;
 
-							break;
-						case 'b':
-							score+= 2;
-							break;
-						case 'c':
-							score+= 1;
-							break;
-						case 'd':
-							score+= 1;
-							break;
-						case 'e':
-							score+= 1;
-							break;
-						case 'f':
-							score+= 1;
-							break;
-						case 'g':
-							score+= 1;
-							break;
-						case 'h':
-							score+= 0;
-							break;
-						case 'i':
-							score+= 0;
-							break;
-						}
-						Card.pop();
-					}
-					else {
-						char d = Card.top();
+                                break;
+                            case 'b':
+                                score+= 2;
+                                break;
+                            case 'c':
+                                score+= 1;
+                                break;
+                            case 'd':
+                                score+= 1;
+                                break;
+                            case 'e':
+                                score+= 1;
+                                break;
+                            case 'f':
+                                score+= 1;
+                                break;
+                            case 'g':
+                                score+= 1;
+                                break;
+                            case 'h':
+                                score+= 0;
+                                break;
+                            case 'i':
+                                score+= 0;
+                                break;
+                            }
+                            Card.pop();
+                        }
+                        else {
+                            char d = Card.top();
 
-						for(int i=0; i<9; i++ ) {
+                            for(int i=0; i<9; i++ ) {
 
-							if(people[i].id==d){
-                                people[i].die();break;
-							}
+                                if(people[i].id==d){
+                                    people[i].die();break;
+                                }
 
-						}
-						Card.pop();
-					}
-					break;
-				}
-			}
-			if(flag==false)cout<<"\"draw\"is not available\n";
-            else break;
+                            }
+                            Card.pop();
+                        }
+                        break;
+                    }
+                }
+                if(flag==false)cout<<"\"draw\"is not available\n";
+                else break;
 
+            }
+            else if(cmd == string("-dog")) {
+                for(int i = 0 ; i < 4; i++){
+                    if(acts[i]=="Dog"&&used[i]==false){
+                        used[i]=true;
+                        flag=true;
+                        int step;
+                        while(cout <<"Input the step :",cin >>step) {
+                            if(step > 0&& step <= 2 )break;
+                            else cout <<"Error step !\n";
+                        }
+                        hol_tm.set_character_pos(Dog,step);
+                        break;
+                    }
+                }
+                if(flag==false)cout<<"\"dog\" is not available\n";
+                else break;
+
+            }
+            else if(cmd == string("-hol")) {
+                for(int i = 0; i<4 ; i++){
+                    if(acts[i]=="Holmes"&&used[i]==false){
+                        flag = true;
+                        used[i]=true;
+                        int step;
+                        while(cout <<"Input the step :",cin >>step) {
+                            if(step > 0&& step <= 2 )break;
+                            else cout <<"Error step !\n";
+                        }
+                        hol_tm.set_character_pos(Holmes,step);
+                        break;
+                    }
+                }
+                if(flag==false)cout<<"\"Holmes\" is not available\n";
+                else break;
+
+            }
+            else if(cmd == string("-wat")) {
+                for(int i = 0; i < 4; i++){
+                    if(acts[i]=="Watson"&&used[i]==false){
+                        used[i]=true;
+                        flag = true;
+                        int step;
+                        while(cout <<"Input the step :",cin >>step) {
+                            if(step > 0&& step <= 2 )break;
+                            else cout <<"Error step !\n";
+                        }
+                        hol_tm.set_character_pos(Watson,step);
+                        break;
+                    }
+                }
+                if(flag ==false)cout<<"\"Watson\" is not available\n";
+                else break;
+
+            }
+            else if(cmd == string("-3in1")) {
+                for(int i = 0 ; i < 4; i++){
+                    if("3in1"==acts[i]&&used[i]==false){
+                        used[i]=true;
+                        flag = true;
+                        string character;
+                        int cha;
+                        int step;
+                        if(turn){//jack
+                            while(cout <<"Select the character (Holmes, Watson, Dog or no):",cin >>character){
+                                if(character==string("Holmes")){cha= Holmes;break;}
+                                else if(character==string("Watson")){cha= Watson;break;}
+                                else if(character==string("Dog")){cha= Dog;break;}
+                                else if(character==string("no")){cha = 30;break;}
+                                else cout<<"error character\n";
+                            }
+                            if(cha == 30)break;
+                            else {
+                                while(cout <<"Input the step :",cin >>step) {
+                                    if(step > 0&& step <= 1 ){
+                                        hol_tm.set_character_pos(cha,step);
+                                        break;
+                                    }
+                                    else cout <<"Error step !\n";
+                                }
+                            }
+                            break;
+
+                        }
+
+                        else {
+                            while(cout <<"Select the character (Holmes, Watson or Dog):",cin >>character){
+                                if(character==string("Holmes")){cha= Holmes;break;}
+                                if(character==string("Watson")){cha= Watson;break;}
+                                if(character==string("Dog")){cha= Dog;break;}
+                                else cout<<"error character\n";
+                            }
+                            while(cout <<"Input the step :",cin >>step) {
+                                if(step > 0&& step <= 1 )break;
+                                else cout <<"Error step !\n";
+                            }
+                            hol_tm.set_character_pos(cha,step);
+                            break;
+                        }
+                    }
+                }
+                if(flag==false)cout<<"\"3in1\" is not available\n";
+                else break;
+
+            }
+            else if(cmd == string("-spin")) {
+                for(int i = 0; i < 4; i++){
+                    if(acts[i]=="Spin"&&used[i]==false){
+                        used[i]=true;
+                        flag = true;
+                        char sel;
+                        while(cout <<"Input the poeple(a~i):",cin >>sel) {
+                            if(sel>='a' && sel <='i')break;
+                            else cout <<"Error people !\n";
+                        }
+                        int deg;
+                        while(cout <<"Input the degree(90*n):",cin >>deg) {
+                            if(deg % 90 == 0  )break;
+                            else cout <<"Error degree !\n";
+                        }
+                        for(int i=0; i<9; i++ ) {
+                            if(people[i].id==sel){
+                                if(people[i].set_direction(deg % 360)==-1)cout <<"Error set direction\n";
+                            break;}
+                        }
+                        break;
+                    }
+                }
+                if(flag == false)cout<<"\"Spin\" is not available\n";
+                else break;
+
+            }
+            else if(cmd == string("-xhcg")) {
+                for(int i = 0 ;i < 4; i++){
+                    if(acts[i]=="Exchange"&&used[i]==false){
+                        used[i]=true;
+                        flag = true;
+                        char sel1, sel2;
+                        while(cout<<"Input the first selection(a~i):"){
+                            cin>>sel1;
+                            cout<<"Input the second selection(a~i):";
+                            cin>>sel2;
+                            if(sel1>='a'&&sel1<='i'&&sel2>='a'&&sel2<='i'&&sel1!=sel2)break;
+                            else cout<<"Input error!\n";
+                        }
+                        int p3=0,p4=0;
+                        for(int i=0; i<9; i++ ) {
+                            if(people[i].id==sel1)p3=i;
+                            if(people[i].id==sel2)p4=i;
+                        }
+                        std::swap(people[p3],people[p4]);
+                        break;
+                    }
+
+                }
+                if(flag==false)cout<<"\"Exchange\" is not available\n";
+                else break;
+
+            }
+            else if(cmd == string("-help")){
+                printf("-draw\n");
+                printf("-dog [step] \n");
+                printf("-wat [step] \n");
+                printf("-hol [step] \n");
+                printf("-3in1 [charater] [steps]\n");
+                printf("-spin\n");
+                printf("-xhcg [op1] [op2]\n");
+            }
+            else printf("wrong command\n");
         }
-		else if(cmd == string("-dog")) {
-			for(int i = 0 ; i < 4; i++){
-				if(acts[i]=="Dog"&&used[i]==false){
-					used[i]=true;
-					flag=true;
-					int step;
-					while(cout <<"Input the step :",cin >>step) {
-						if(step > 0&& step <= 2 )break;
-						else cout <<"Error step !\n";
-					}
-					hol_tm.set_character_pos(Dog,step);
-					break;
-				}
-			}
-			if(flag==false)cout<<"\"dog\" is not available\n";
-			else break;
-
-        }
-		else if(cmd == string("-hol")) {
-			for(int i = 0; i<4 ; i++){
-				if(acts[i]=="Holmes"&&used[i]==false){
-					flag = true;
-					used[i]=true;
-					int step;
-					while(cout <<"Input the step :",cin >>step) {
-						if(step > 0&& step <= 2 )break;
-						else cout <<"Error step !\n";
-					}
-					hol_tm.set_character_pos(Holmes,step);
-					break;
-				}
-			}
-			if(flag==false)cout<<"\"Holmes\" is not available\n";
-			else break;
-
-        }
-		else if(cmd == string("-wat")) {
-			for(int i = 0; i < 4; i++){
-				if(acts[i]=="Watson"&&used[i]==false){
-					used[i]=true;
-					flag = true;
-					int step;
-					while(cout <<"Input the step :",cin >>step) {
-						if(step > 0&& step <= 2 )break;
-						else cout <<"Error step !\n";
-					}
-					hol_tm.set_character_pos(Watson,step);
-					break;
-				}
-			}
-			if(flag ==false)cout<<"\"Watson\" is not available\n";
-			else break;
-
-        }
-		else if(cmd == string("-3in1")) {
-			for(int i = 0 ; i < 4; i++){
-				if("3in1"==acts[i]&&used[i]==false){
-					used[i]=true;
-					flag = true;
-					string character;
-					int cha;
-					int step;
-					if(turn){//jack
-						while(cout <<"Select the character (Holmes, Watson, Dog or no):",cin >>character){
-							if(character==string("Holmes")){cha= Holmes;break;}
-							else if(character==string("Watson")){cha= Watson;break;}
-							else if(character==string("Dog")){cha= Dog;break;}
-							else if(character==string("no")){cha = 30;break;}
-							else cout<<"error character\n";
-						}
-						if(cha == 30)break;
-						else {
-							while(cout <<"Input the step :",cin >>step) {
-								if(step > 0&& step <= 1 ){
-									hol_tm.set_character_pos(cha,step);
-									break;
-								}
-								else cout <<"Error step !\n";
-							}
-						}
-						break;
-
-					}
-
-					else {
-						while(cout <<"Select the character (Holmes, Watson or Dog):",cin >>character){
-							if(character==string("Holmes")){cha= Holmes;break;}
-							if(character==string("Watson")){cha= Watson;break;}
-							if(character==string("Dog")){cha= Dog;break;}
-							else cout<<"error character\n";
-						}
-						while(cout <<"Input the step :",cin >>step) {
-							if(step > 0&& step <= 1 )break;
-							else cout <<"Error step !\n";
-						}
-						hol_tm.set_character_pos(cha,step);
-						break;
-					}
-				}
-			}
-			if(flag==false)cout<<"\"3in1\" is not available\n";
-			else break;
-
-        }
-		else if(cmd == string("-spin")) {
-			for(int i = 0; i < 4; i++){
-				if(acts[i]=="Spin"&&used[i]==false){
-					used[i]=true;
-					flag = true;
-					char sel;
-					while(cout <<"Input the poeple(a~i):",cin >>sel) {
-						if(sel>='a' && sel <='i')break;
-						else cout <<"Error people !\n";
-					}
-					int deg;
-					while(cout <<"Input the degree(90*n):",cin >>deg) {
-						if(deg % 90 == 0  )break;
-						else cout <<"Error degree !\n";
-					}
-					for(int i=0; i<9; i++ ) {
-						if(people[i].id==sel){
-                            if(people[i].set_direction(deg % 360)==-1)cout <<"Error set direction\n";
-						break;}
-					}
-					break;
-				}
-			}
-			if(flag == false)cout<<"\"Spin\" is not available\n";
-			else break;
-
-        }
-		else if(cmd == string("-xhcg")) {
-			for(int i = 0 ;i < 4; i++){
-				if(acts[i]=="Exchange"&&used[i]==false){
-					used[i]=true;
-					flag = true;
-					char sel1, sel2;
-					while(cout<<"Input the first selection(a~i):"){
-						cin>>sel1;
-						cout<<"Input the second selection(a~i):";
-						cin>>sel2;
-						if(sel1>='a'&&sel1<='i'&&sel2>='a'&&sel2<='i'&&sel1!=sel2)break;
-						else cout<<"Input error!\n";
-					}
-					int p3=0,p4=0;
-					for(int i=0; i<9; i++ ) {
-						if(people[i].id==sel1)p3=i;
-						if(people[i].id==sel2)p4=i;
-					}
-					std::swap(people[p3],people[p4]);
-					break;
-				}
-
-			}
-			if(flag==false)cout<<"\"Exchange\" is not available\n";
-			else break;
-
-        }
-		else if(cmd == string("-help")){
-			printf("-draw\n");
-			printf("-dog [step] \n");
-			printf("-wat [step] \n");
-			printf("-hol [step] \n");
-			printf("-3in1 [charater] [steps]\n");
-			printf("-spin\n");
-			printf("-xhcg [op1] [op2]\n");
-        }
-		else printf("wrong command\n");
+	}
+	else {
+        /*/
+        string("draw card") string("Watson")),
+        string("Dog")   string("Holmes"))
+        string("Spin")  string("3in1"))
+        string("Spin")  string("Exchange")
+        */
+        srand(time(NULL));
+        int r;
+        do{
+            srand(time(NULL));
+            r= rand()%4;
+        }while(used[r]);
+        //printf("roll: %d,pos: %d\n",r+1,act_lock[r]);
+        string cmd;
+        if(act_lock[r])cmd =ActCard[r].first;
+        else cmd =ActCard[r].second;
+    if(cmd == "draw card"){
+            printf("Draw card\n");
+            if(turn) {
+                switch(Card.top()) {
+                case 'a':
+                    score+= 1;
+                    break;
+                case 'b':
+                    score+= 2;
+                    break;
+                case 'c':
+                    score+= 1;
+                    break;
+                case 'd':
+                    score+= 1;
+                    break;
+                case 'e':
+                    score+= 1;
+                    break;
+                case 'f':
+                    score+= 1;
+                    break;
+                case 'g':
+                    score+= 1;
+                    break;
+                case 'h':
+                    score+= 0;
+                    break;
+                case 'i':
+                    score+= 0;
+                    break;
+                }
+            Card.pop();
+            }
+            else {
+                char d = Card.top();
+                for(int i=0; i<9; i++ ) {
+                    if(people[i].id==d){
+                        people[i].die();break;
+                    }
+                }
+                Card.pop();
+            }
     }
+    else if(cmd =="Watson"){
+        srand(time(NULL));
+        int step=rand()%2+1;
+        hol_tm.set_character_pos(Watson,step);
+        printf("Move Watson %d\n",step);
+    }
+    else if(cmd =="Dog"){
+        srand(time(NULL));
+        hol_tm.set_character_pos(Dog,rand()%2+1);
+        printf("Move Dog \n");
+	}
+    else if(cmd =="Holmes"){
+        srand(time(NULL));
+        hol_tm.set_character_pos(Holmes,rand()%2+1);
+        printf("Move Holmes \n");
+    }
+    else if(cmd =="Spin"){
+                srand(time(NULL));
+                int id=rand()%9;
+                int deg=(rand()%100)* 90;
+                while(deg == people[id].get_deg())
+                    deg=(rand()%10 )* 90;
+                people[id].set_direction(deg % 360);
+                printf("Spin %c to %d\n",people[id].id,deg%360);
+    }
+    else if(cmd =="3in1"){
+                srand(time(NULL));
+                int id=rand()%3;
+                int step;
+                srand(time(NULL));
+                if(turn)step =rand()%2;
+                else step=1;
+                hol_tm.set_character_pos(id,step);
+                if(id==Holmes)printf("Move Holmes %d\n",step);
+                else if(id ==Watson)printf("Move Watson %d\n",step);
+                else if(id ==Dog)printf("Move Dog %d\n",step);
+    }
+    else if(cmd =="Exchange"){
+                int i,j;
+                srand(time(NULL));
+                i = rand()%9;
+                j = rand()%9;
+                while(i==j)i = rand()%9;
+                printf("Exchange %c,%c\n",people[i].id,people[j].id);
+                swap(people[i],people[j]);
+    }
+         used[r]=true;
+	}
 }
 void Desktop::print_map() {
     string map[5][5];
@@ -1282,6 +1394,6 @@ void Desktop::suspect_check(int round){
 		cout<<"holmes wins\n";
 		gameover = true;
 	}
-	
+
 }
 
