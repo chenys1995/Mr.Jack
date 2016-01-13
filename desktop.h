@@ -215,6 +215,13 @@ void Desktop::parse_cmd(bool turn, int cnt, bool* act_lock, bool* used) {//0 Hol
                     if(acts[i]=="draw card"&&used[i]==false){//if draw is available
                         flag = true;
                         used[i] = true;
+                        #ifdef debug
+                        stack<char> read=Card;
+                        while(!read.empty()){
+                            printf("Card top:%c\n",read.top());
+                            read.pop();
+                        }
+                        #endif
                         if(turn) {
                             switch(Card.top()) {
                             case 'a':
@@ -455,6 +462,13 @@ void Desktop::parse_cmd(bool turn, int cnt, bool* act_lock, bool* used) {//0 Hol
         if(act_lock[r])cmd =ActCard[r].first;
         else cmd =ActCard[r].second;
     if(cmd == "draw card"){
+            #ifdef debug
+            stack<char> read=Card;
+            while(!read.empty()){
+                printf("Card top:%c\n",read.top());
+                read.pop();
+            }
+            #endif
             printf("Draw card\n");
             if(turn) {
                 switch(Card.top()) {
@@ -1377,20 +1391,24 @@ void Desktop::suspect_check(int round){
 	if(score >= 6){
 		if(dead == 8){
 			if(seen[jack]){
+                printf("jack is %c\n",jack_id);
 				cout<<"holmes wins\n";
 				gameover = true;
 			}
 			else if(round == 9){
+                printf("jack is %c\n",jack_id);
 				cout<<"jack wins\n";
 				gameover = true;
 			}
 		}
 		else {
+            printf("jack is %c\n",jack_id);
 			cout<<"jack wins\n";
 			gameover = true;
 		}
 	}
 	else if(dead == 8 ){
+        printf("jack is %c\n",jack_id);
 		cout<<"holmes wins\n";
 		gameover = true;
 	}
