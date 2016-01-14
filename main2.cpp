@@ -23,12 +23,10 @@ int main()
 	while(printf("Choose your character :"),cin >>id){
 		if(id=="Jack" ||id == "jack"){
 				printf("You are Jack , id : %c \n" ,desk.get_jack());
-				desk.player_id = true;
 				break;
 		}
-		else if(id=="Holmes" || id =="holmes"){
+		else if(id==string("Holmes")){
 				printf("You are Holmes\n");
-                desk.player_id = false;
 				break;
 		}
 	}
@@ -40,11 +38,15 @@ int main()
 		for(int i=0;i<4;++i)
 			act_lock[i]=rand()%2;//1 front ;0 back;
     while(round <= round_time){
-
+		
         if(cnt==4){
 			round ++;
 			desk.suspect_check(round);
-			if(desk.isOver())break;
+			if(desk.isOver()){
+				desk.print_map();
+				desk.print_status();
+				break;
+			}
 			seed = std::chrono::system_clock::now().time_since_epoch().count();
 			srand(seed);
 			cnt = 0;
@@ -53,18 +55,17 @@ int main()
 			if(round%2 !=0){
 				for(int i=0;i<4;++i)
 					act_lock[i]=rand()%2;//1 front ;0 back;
-
+				
 			}
 			else {
 				for(int i = 0; i <4 ;++i)
-					act_lock[i]=((act_lock[i])?false:true);
+					act_lock[i]=((act_lock[i])?false:true);				
 			}
 		}
         // throw action card
-
-
+        
+        
         // throw done
-        printf("round :%d\n",round);
         printf("This turn is :");
         if(turn[cnt])printf("Jack\n");
         else printf("Holmes\n");
@@ -72,7 +73,7 @@ int main()
         desk.print_status(); // status of districts
         print_act(desk,act_lock,used);// available act card
         desk.parse_cmd(turn[cnt],cnt,act_lock,used);
-
+		
         cnt++;
     }
 	return 0;
